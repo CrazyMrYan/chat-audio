@@ -14,7 +14,6 @@
     "express-fileupload": "^1.4.0",
     "nodemon": "^2.0.22",
     "openai": "^3.2.1",
-    "vercel": "^28.18.3",
     "websocket": "^1.0.34"
   }
 }

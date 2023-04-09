@@ -3,7 +3,6 @@ const fileUpload = require("express-fileupload");
 const app = express();
 const { Configuration, OpenAIApi } = require("openai");
 const fs = require("fs");
-const load = require('audio-loader')
 const { promisify } = require("util");
 const play = require("./utils/play").Play();
 const path = require("path");
@@ -116,8 +115,10 @@ app.get('/submit-issue', async (req, res) => {
   }
 })
 
-app.use(express.static("client"));
+app.use(express.static(path.join(__dirname, "client")));
 
-app.listen(3000, () => {
-  console.log("Server started on port 3000");
-});
+// app.listen(3000, () => {
+//   console.log("Server started on port 3000");
+// });
+
+module.exports = app;

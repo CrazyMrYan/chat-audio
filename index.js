@@ -1,2 +1,0 @@
-const test = 1
-

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat App</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 引入样式 -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+    />
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+      .user-bubble {
+        background-color: #dcf8c6;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 10px;
+        min-width: 50px;
+        display: inline-block;
+      }
+      .system-bubble {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 10px;
+        display: inline-block;
+        min-width: 50px;
+        white-space: pre-wrap;
+      }
+      #app {
+        width: 400px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        max-height: 100vh;
+        overflow: auto;
+        height: 100vh;
+        background-color: #f2f2f2;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .send-chat {
+        position: fixed;
+        bottom: 0;
+        width: 400px;
+        display: flex;
+        align-items: center;
+      }
+      .send-chat input {
+        padding: 0;
+        margin: 0;
+        border: none;
+        flex: 1;
+        height: 40px;
+        box-sizing: border-box;
+        padding: 0 10px;
+        outline: none;
+      }
+      .chat--box {
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .send--btn button {
+        width: 60px;
+        padding: 0 !important;
+        box-sizing: border-box;
+      }
+      i {
+        font-size: 16px !important;
+      }
+      .chat--title {
+        width: 400px;
+        text-align: center;
+        height: 40px;
+        line-height: 40px;
+        background-color: #ffffff;
+        position: fixed;
+        top: 0;
+      }
+      .chat--container__message {
+        /* min-height: 100vh; */
+        padding: 40px 0;
+      }
+      .audio-message {
+        display: flex;
+        width: 100px;
+        align-items: center;
+        justify-content: space-between;
+        padding-right: 20px;
+        box-sizing: border-box;
+        color: #999;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" ref="chat-container">
+      <div class="chat--title">
+        Chat GPT
+      </div>
+      <div class="chat--container__message" style="overflow: auto;">
+        <div v-for="(message, index) in messages" class="chat--box">
+          <div
+            v-if="message.infoType === 'audio'"
+            :class="[ getBubble(message), 'audio-message' ]"
+            @click="playAudio(message, index)"
+          >
+            <i
+              :class="[message.playStatus ? 'el-icon-video-pause' : 'el-icon-video-play']"
+            ></i>
+            {{ message.length }}
+            <audio
+              :ref="'audio' + index"
+              @ended="endedAudio(message, $event)"
+              style="display: none;"
+              controls
+              :src="message.content"
+            ></audio>
+          </div>
+          <div v-else :class="[ getBubble(message) ]">
+            {{ message.content }}
+          </div>
+        </div>
+      </div>
+      <div class="send-chat">
+        <el-button
+          :style="btnStyle"
+          v-if="!recording"
+          @click="startRecording"
+          icon="el-icon-microphone"
+          class="send--btn"
+        ></el-button>
+        <el-button
+          :style="btnStyle"
+          style="flex: 1"
+          v-else
+          @click="stopRecording"
+          icon="el-icon-s-promotion"
+          class="send--btn"
+        ></el-button>
+        <template v-if="!recording">
+          <input
+            type="text"
+            v-model="newMessage"
+            @keyup.enter="sendTextMessage"
+          />
+          <el-button
+            :style="btnStyle"
+            @click="sendTextMessage"
+            icon="el-icon-s-promotion"
+            class="send--btn"
+          ></el-button>
+        </template>
+      </div>
+    </div>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          messages: [],
+          newMessage: "",
+          audioEnabled: false,
+          recording: false,
+          audioChunks: [],
+          audioBlob: null,
+          audioURL: null,
+          recordingType: true,
+          loading: false,
+          btnStyle: {
+            height: "40px",
+            border: "unset",
+            borderRadius: "0",
+          },
+        },
+
+        computed: {
+          getBubble() {
+            return ({ type }) =>
+              type === "system" ? "system-bubble" : "user-bubble";
+          },
+        },
+
+        methods: {
+          sendTextMessage: function() {
+            if (this.newMessage?.trim()?.length) {
+              const formData = new FormData();
+              this.messages.push({
+                type: "user",
+                content: this.newMessage,
+                infoType: "text",
+              });
+
+              fetch(`/submit-issue?issue=${this.newMessage?.trim()}`)
+                .then((response) => response.json())
+                .then((data) => {
+                  this.loading = false;
+                  if (data?.error) {
+                    this.$message.error({ message: data.message, offset: 50 });
+                    return;
+                  }
+                  this.messages.push(...data);
+                });
+              this.newMessage = "";
+            }
+          },
+
+          endedAudio(item, e) {
+            item.playStatus = false;
+          },
+
+          playAudio(item, index) {
+            const recordAudio = this.$refs["audio" + index][0]; // 获取audio元素
+            if (recordAudio.paused) {
+              recordAudio.play();
+              item.playStatus = true;
+            } else {
+              recordAudio.pause();
+              item.playStatus = false;
+            }
+          },
+
+          sendAudioMessage: function(message) {
+            const length = parseInt(this.audioBlob.size / 6600)
+            if(length < 1) {
+                this.$message.warning({ message: '说话时间太短', offset: 50 })
+                return 
+            }
+            this.loading = true;
+            this.messages.push({
+              type: "user",
+              content: this.audioURL,
+              infoType: "audio",
+              playStatus: false,
+              length
+            });
+            const formData = new FormData();
+            formData.append("file", message);
+            fetch("/audio", {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                this.loading = false;
+                if (data?.error) {
+                  this.$message.error({ message: data.message, offset: 50 });
+                  return;
+                }
+                this.messages.push(...data);
+              });
+          },
+
+          toggleAudio: function() {
+            this.audioEnabled = !this.audioEnabled;
+          },
+       
+          startRecording: function() {
+            this.recording = true;
+            this.audioChunks = [];
+            navigator.mediaDevices
+              .getUserMedia({ audio: true })
+              .then((stream) => {
+                this.mediaRecorder = new MediaRecorder(stream);
+                this.mediaRecorder.addEventListener(
+                  "dataavailable",
+                  (event) => {
+                    this.audioChunks.push(event.data);
+                  }
+                );
+                this.mediaRecorder.addEventListener("stop", async () => {
+                  this.audioBlob = new Blob(this.audioChunks);
+                  this.audioURL = URL.createObjectURL(this.audioBlob);
+                  this.sendAudioMessage(this.audioBlob);
+                });
+                this.mediaRecorder.start();
+              });
+          },
+          stopRecording: function() {
+            this.mediaRecorder.stop();
+            this.recording = false;
+          },
+
+          scrollToBottom: function() {
+            this.$nextTick(() => {
+              this.$refs["chat-container"].scrollTop = this.$refs[
+                "chat-container"
+              ].scrollHeight;
+            });
+          },
+        },
+        mounted: function() {
+          this.scrollToBottom();
+        },
+        updated: function() {
+          this.scrollToBottom();
+        },
+      });
+    </script>
+  </body>
+</html>

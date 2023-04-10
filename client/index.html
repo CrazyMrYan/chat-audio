@@ -192,7 +192,7 @@
                 infoType: "text",
               });
 
-              fetch(`/submit-issue?issue=${this.newMessage?.trim()}`)
+              fetch(`api/submit-issue?issue=${this.newMessage?.trim()}`)
                 .then((response) => response.json())
                 .then((data) => {
                   this.loading = false;
@@ -237,7 +237,7 @@
             });
             const formData = new FormData();
             formData.append("file", message);
-            fetch("/audio", {
+            fetch("api/audio", {
               method: "POST",
               body: formData,
             })

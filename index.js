@@ -4,7 +4,6 @@ const app = express();
 const { Configuration, OpenAIApi } = require("openai");
 const fs = require("fs");
 const { promisify } = require("util");
-const play = require("./utils/play").Play();
 const path = require("path");
 const tts = promisify(require("./utils/tts"));
 require("dotenv").config();
@@ -67,7 +66,7 @@ const handleIssueReply = async (prompt) => {
 
 app.use(fileUpload());
 
-app.post("/audio", async (req, res) => {
+app.post("api/audio", async (req, res) => {
   if (!req.files) {
     return res.status(400).send("No files were uploaded.");
   }
@@ -104,7 +103,7 @@ app.post("/audio", async (req, res) => {
 
 });
 
-app.get('/submit-issue', async (req, res) => {
+app.get('/api/submit-issue', async (req, res) => {
   const { issue } = req.query;
   if(!issue.trim()) return res.send({ message: "缺少参数", error: true })
   if(issue) {
@@ -117,8 +116,8 @@ app.get('/submit-issue', async (req, res) => {
 
 app.use(express.static(path.join(__dirname, "client")));
 
-// app.listen(3000, () => {
-//   console.log("Server started on port 3000");
-// });
+app.listen(3000, () => {
+  console.log("Server started on port 3000");
+});
 
 module.exports = app;

@@ -6,5 +6,5 @@
       "use": "@vercel/node"
     }
   ],
-  "rewrites": [{ "source": "/client/(.*)", "destination": "/client" }]
+  "rewrites": [{ "source": "/api/(.*)", "destination": "http://loaclhost:3000/" }]
 }

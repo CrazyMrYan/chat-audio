@@ -6,7 +6,10 @@ const fs = require("fs");
 const { promisify } = require("util");
 const path = require("path");
 const tts = promisify(require("./utils/tts"));
-require("dotenv").config({ path: path.resolve(__dirname, ".env.preview.local")});
+const configPath = process.env.NODE_ENV === 'production' ? `.env.production.local` : '.env.preview.local';
+// console.log(process.env.NODE_ENV);
+
+require("dotenv").config({ path: path.resolve(__dirname, configPath)});
 
 const openGreetings = (text) => {
   return new Promise((resolve, reject) => {

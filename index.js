@@ -30,9 +30,6 @@ const openGreetings = (text) => {
     try {
       // 执行请求
       tts(auth, business, text, file).then((res) => {
-        // play.sound(file, function() {
-        //   console.log("播放完毕");
-        // });
         resolve(`audio/${id}.m4a`)
       });
     } catch (e) {
@@ -93,8 +90,6 @@ app.post("api/audio", async (req, res) => {
       const text = await handleIssueReply(prompt);
       const content = await openGreetings(text);
       console.log('生成的音频是>>>', content);
-      // const res = await load(path.resolve(__dirname, `client/${content}`))
-      // console.log(res);
       res.send([
         { type: "system", content, text, infoType: 'audio', playStatus: false },
       ]);
@@ -107,13 +102,20 @@ app.get('/api/submit-issue', async (req, res) => {
   const { issue } = req.query;
   if(!issue.trim()) return res.send({ message: "缺少参数", error: true })
   if(issue) {
-    const chat = await handleIssueReply(issue);
-    return res.send([
-      { type: "system", content: chat },
-    ]);
+    try {
+      const chat = await handleIssueReply(issue);
+      return res.send([
+        { type: "system", content: chat },
+      ]);
+    } catch (error) {
+      console.log(process.env.OPENAI_API_KEY);
+      console.log(error);
+    }
   }
 })
-
 app.use(express.static(path.join(__dirname, "client")));
+
+// app.listen(3000);
+
 
 module.exports = app;

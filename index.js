@@ -6,7 +6,7 @@ const fs = require("fs");
 const { promisify } = require("util");
 const path = require("path");
 const tts = promisify(require("./utils/tts"));
-// require("dotenv").config();
+require("dotenv").config({ path: path.resolve(__dirname, ".env.preview.local")});
 
 const openGreetings = (text) => {
   return new Promise((resolve, reject) => {
@@ -114,8 +114,5 @@ app.get('/api/submit-issue', async (req, res) => {
   }
 })
 app.use(express.static(path.join(__dirname, "client")));
-
-// app.listen(3000);
-
 
 module.exports = app;

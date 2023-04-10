@@ -6,7 +6,7 @@ const fs = require("fs");
 const { promisify } = require("util");
 const path = require("path");
 const tts = promisify(require("./utils/tts"));
-require("dotenv").config();
+// require("dotenv").config();
 
 const openGreetings = (text) => {
   return new Promise((resolve, reject) => {
@@ -115,9 +115,5 @@ app.get('/api/submit-issue', async (req, res) => {
 })
 
 app.use(express.static(path.join(__dirname, "client")));
-
-app.listen(3000, () => {
-  console.log("Server started on port 3000");
-});
 
 module.exports = app;

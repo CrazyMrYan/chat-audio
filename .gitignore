@@ -108,3 +108,4 @@ openai_keys
 .DS_Store
 .vercel
 .env
+.env.preview.local

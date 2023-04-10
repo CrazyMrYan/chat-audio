@@ -108,11 +108,14 @@ app.get('/api/submit-issue', async (req, res) => {
         { type: "system", content: chat },
       ]);
     } catch (error) {
-      console.log(process.env.OPENAI_API_KEY);
-      console.log(error);
+      res.status(500).send({ error: true, message: error })
     }
   }
 })
 app.use(express.static(path.join(__dirname, "client")));
+
+// app.listen(3000, () => {
+//   // console.log(process.env.OPENAI_API_KEY);
+// });
 
 module.exports = app;

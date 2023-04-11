@@ -92,6 +92,9 @@
         padding-right: 20px;
         box-sizing: border-box;
         color: #999;
+        height: 42px;
+        align-items: center;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -110,7 +113,7 @@
             <i
               :class="[message.playStatus ? 'el-icon-video-pause' : 'el-icon-video-play']"
             ></i>
-            {{ message.length }}
+            <span>{{ message.length }}</span>
             <audio
               :ref="'audio' + index"
               @ended="endedAudio(message, $event)"
@@ -183,7 +186,7 @@
         },
 
         methods: {
-          sendTextMessage: function() {
+          sendTextMessage() {
             if (this.newMessage?.trim()?.length) {
               const formData = new FormData();
               this.messages.push({
@@ -221,7 +224,7 @@
             }
           },
 
-          sendAudioMessage: function(message) {
+          sendAudioMessage(message) {
             const length = parseInt(this.audioBlob.size / 6600)
             if(length < 1) {
                 this.$message.warning({ message: '说话时间太短', offset: 50 })
@@ -252,11 +255,11 @@
               });
           },
 
-          toggleAudio: function() {
+          toggleAudio() {
             this.audioEnabled = !this.audioEnabled;
           },
        
-          startRecording: function() {
+          startRecording() {
             this.recording = true;
             this.audioChunks = [];
             navigator.mediaDevices
@@ -277,12 +280,12 @@
                 this.mediaRecorder.start();
               });
           },
-          stopRecording: function() {
+          stopRecording() {
             this.mediaRecorder.stop();
             this.recording = false;
           },
 
-          scrollToBottom: function() {
+          scrollToBottom() {
             this.$nextTick(() => {
               this.$refs["chat-container"].scrollTop = this.$refs[
                 "chat-container"
@@ -290,10 +293,10 @@
             });
           },
         },
-        mounted: function() {
+        mounted() {
           this.scrollToBottom();
         },
-        updated: function() {
+        updated() {
           this.scrollToBottom();
         },
       });

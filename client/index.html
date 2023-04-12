@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Chat App</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
     <!-- 引入样式 -->
     <link
       rel="stylesheet"
@@ -96,6 +96,10 @@
         align-items: center;
         cursor: pointer;
       }
+      .el-tooltip__popper {
+        max-width: 200px;
+        white-space: pre-wrap;
+      }
     </style>
   </head>
   <body>
@@ -105,23 +109,30 @@
       </div>
       <div class="chat--container__message" style="overflow: auto;">
         <div v-for="(message, index) in messages" class="chat--box">
-          <div
+          <el-tooltip
             v-if="message.infoType === 'audio'"
-            :class="[ getBubble(message), 'audio-message' ]"
-            @click="playAudio(message, index)"
+            :content="message.chatReply"
+            placement="top-start"
+            :disabled="!message.chatReply || message.type === 'user'"
           >
-            <i
-              :class="[message.playStatus ? 'el-icon-video-pause' : 'el-icon-video-play']"
-            ></i>
-            <span>{{ message.length }}</span>
-            <audio
-              :ref="'audio' + index"
-              @ended="endedAudio(message, $event)"
-              style="display: none;"
-              controls
-              :src="message.content"
-            ></audio>
-          </div>
+            <div
+              :class="[ getBubble(message), 'audio-message' ]"
+              @click="playAudio(message, index)"
+            >
+              <i
+                :class="[message.playStatus ? 'el-icon-video-pause' : 'el-icon-video-play']"
+              ></i>
+              <span>{{ message.length }}</span>
+              <audio
+                :ref="'audio' + index"
+                @ended="endedAudio(message, $event)"
+                style="display: none;"
+                controls
+                :src="message.content"
+              ></audio>
+            </div>
+          </el-tooltip>
+
           <div v-else :class="[ getBubble(message) ]">
             {{ message.content }}
           </div>
@@ -225,10 +236,10 @@
           },
 
           sendAudioMessage(message) {
-            const length = parseInt(this.audioBlob.size / 6600)
-            if(length < 1) {
-                this.$message.warning({ message: '说话时间太短', offset: 50 })
-                return 
+            const length = parseInt(this.audioBlob.size / 6600);
+            if (length < 1) {
+              this.$message.warning({ message: "说话时间太短", offset: 50 });
+              return;
             }
             this.loading = true;
             this.messages.push({
@@ -236,7 +247,7 @@
               content: this.audioURL,
               infoType: "audio",
               playStatus: false,
-              length
+              length,
             });
             const formData = new FormData();
             formData.append("file", message);
@@ -258,7 +269,7 @@
           toggleAudio() {
             this.audioEnabled = !this.audioEnabled;
           },
-       
+
           startRecording() {
             this.recording = true;
             this.audioChunks = [];
@@ -292,9 +303,7 @@
               ].scrollHeight;
             });
           },
-        },
-        mounted() {
-          this.scrollToBottom();
+
         },
         updated() {
           this.scrollToBottom();

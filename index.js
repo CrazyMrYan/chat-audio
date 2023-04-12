@@ -60,7 +60,6 @@ const handleIssueReply = async (prompt) => {
     presence_penalty: 0.0,
   });
   const chat = choices[0].text?.trim();
-  console.log("生成的文本内容是>>>", chat);
   return chat;
 };
 
@@ -97,6 +96,7 @@ app.post("/api/audio", async (req, res) => {
     );
 
     console.log("解析的音频内容是>>>", prompt);
+
     // 判断用户上传音频是否存在内容
     if (!prompt.trim().length)
       return res.send({ message: "未识别到语音内容", error: true });
@@ -120,7 +120,7 @@ app.get("/api/submit-issue", async (req, res) => {
   const { issue } = req.query;
   if (!issue.trim()) return res.status(400).send({ message: "缺少参数", error: true });
   const chatReply = await handleIssueReply(issue);
-  return res.send([{ type: "system", content: chatReply.trim() }]);
+  return res.send([{ type: "system", content: chatReply.trim().replace('\n', '') }]);
 });
 app.use(express.static(path.join(__dirname, "client")));
 

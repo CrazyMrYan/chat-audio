@@ -38,7 +38,7 @@ function textToJson(auth, businessInfo, text) {
   business.aue = "raw";
   business.sfl = 1;
   business.auf = "audio/L16;rate=16000";
-  business.vcn = "xiaoyan";
+  business.vcn = "aisjinger";
   business.tte = "UTF8";
   business.speed = 50;
   Object.assign(business, businessInfo);
